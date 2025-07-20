@@ -9,12 +9,14 @@ var replicaPath = IOOperations.GetFolderPathFromConsole(sourcePath);
 Console.Write("Input path to log file: ");
 var logPath = IOOperations.GetFilePathFromConsole(sourcePath, replicaPath);
 
-Console.Write("Input synchronization interval: ");
+Console.Write("Input synchronization interval in milliseconds: ");
 var interval = IOOperations.GetIntegerFromConsole();
 
+var replicator = new ReplicatorObject(sourcePath, replicaPath, logPath, interval);
 
 while (true)
 {
-    string[] sourceFiles = Directory.GetFiles(sourcePath);
-    string[] replicaFiles = Directory.GetFiles(replicaPath);
+    replicator.Replicate();
+    //write to log file and to console every change
+    Thread.Sleep(replicator.Interval);
 }
