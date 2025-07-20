@@ -74,4 +74,20 @@ public static class IOOperations
 
         return res;
     }
+
+    public static void LogAction(string file, string logPath, LoggerMode mode)
+    {
+        var msg = 
+            (mode == LoggerMode.Create ?
+                "Added" :
+                (mode == LoggerMode.Update ?
+                    "Updated" :
+                    "Removed"
+                )) +  $" file {file} At: {DateTime.Now}";
+        
+        Console.WriteLine(msg);
+                
+        using var writeStream = new StreamWriter(logPath, append: true);
+        writeStream.WriteLine(msg);
+    }
 }

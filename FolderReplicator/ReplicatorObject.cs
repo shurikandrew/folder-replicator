@@ -46,12 +46,8 @@ public class ReplicatorObject
             if (!ReplicaFolderFiles.ContainsKey(sourceFilePath))
             {
                 CreateFileReplica(sourceFilePath, fileReplicaPath);
-
-                var msg = $"Added file {Path.GetRelativePath(SourcePath, sourceFilePath)} At: {DateTime.Now}";
-                Console.WriteLine(msg);
                 
-                using var writeStream = new StreamWriter(LogPath, append: true);
-                writeStream.WriteLine(msg);
+                IOOperations.LogAction(Path.GetRelativePath(SourcePath, sourceFilePath), LogPath, LoggerMode.Create);
             }
             else
             {
@@ -61,11 +57,7 @@ public class ReplicatorObject
                 {
                     UpdateFileReplica(sourceFilePath, fileReplicaPath, hash);
                     
-                    var msg = $"Updated file {Path.GetRelativePath(SourcePath, sourceFilePath)} At: {DateTime.Now}";
-                    Console.WriteLine(msg);
-                
-                    using var writeStream = new StreamWriter(LogPath, append: true);
-                    writeStream.WriteLine(msg);
+                    IOOperations.LogAction(Path.GetRelativePath(SourcePath, sourceFilePath), LogPath, LoggerMode.Update);
                 }
             }
         }
@@ -78,11 +70,7 @@ public class ReplicatorObject
                 {
                     RemoveFileReplica(sourceFilePath);
                     
-                    var msg = $"Removed file {Path.GetRelativePath(SourcePath, sourceFilePath)} At: {DateTime.Now}";
-                    Console.WriteLine(msg);
-                
-                    using var writeStream = new StreamWriter(LogPath, append: true);
-                    writeStream.WriteLine(msg);
+                    IOOperations.LogAction(Path.GetRelativePath(SourcePath, sourceFilePath), LogPath, LoggerMode.Remove);
                 }
             }
         }
