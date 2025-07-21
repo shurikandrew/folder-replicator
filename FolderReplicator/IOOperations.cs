@@ -45,7 +45,7 @@ public static class IOOperations
             {
                 Console.WriteLine("Sorry, the path must be to the file with .log extension!");
             }
-            else if (path.Contains(sourcePath) || path.Contains(replicaPath))
+            else if (path!.Contains(sourcePath) || path.Contains(replicaPath))
             {
                 Console.WriteLine("Sorry, log file must be outside of source and replica folders!");
             }
@@ -64,8 +64,7 @@ public static class IOOperations
     {
         Console.Write("Input synchronization interval in milliseconds: ");
         var number = Console.ReadLine();
-        int res = -1;
-        bool flag;
+        int res;
 
         while (!int.TryParse(number, out res) || res <= 0)
         {

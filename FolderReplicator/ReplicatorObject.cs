@@ -1,5 +1,3 @@
-using System.Diagnostics.Tracing;
-using System.Net;
 using System.Security.Cryptography;
 
 namespace FolderReplicator;
@@ -8,7 +6,7 @@ public class ReplicatorObject
 {
     private string SourcePath { get; set; }
     private string ReplicaPath { get; set; }
-    private Dictionary<string, string> ReplicaFolderFiles;
+    private Dictionary<string, string> _replicaFolderFiles;
     public string LogPath { get; set; }
     public int Interval { get; set; }
     
@@ -20,7 +18,7 @@ public class ReplicatorObject
         LogPath = logPath;
         Interval = interval;
 
-        ReplicaFolderFiles = new();
+        _replicaFolderFiles = new();
         ClearReplicaFolder();
     }
 
@@ -50,7 +48,7 @@ public class ReplicatorObject
             var sourceFilePath = sourceFolderFiles[i];
             var fileReplicaPath = Path.Combine(ReplicaPath, Path.GetRelativePath(SourcePath, sourceFilePath));
             
-            if (!ReplicaFolderFiles.ContainsKey(sourceFilePath))
+            if (!_replicaFolderFiles.ContainsKey(sourceFilePath))
             {
                 CreateFileReplica(sourceFilePath, fileReplicaPath);
                 
@@ -60,7 +58,7 @@ public class ReplicatorObject
             {
                 var hash = ComputeHash(sourceFilePath);
 
-                if (hash != ReplicaFolderFiles[sourceFilePath])
+                if (hash != _replicaFolderFiles[sourceFilePath])
                 {
                     UpdateFileReplica(sourceFilePath, fileReplicaPath, hash);
                     
@@ -69,9 +67,9 @@ public class ReplicatorObject
             }
         }
 
-        if (sourceFolderFiles.Length < ReplicaFolderFiles.Count)
+        if (sourceFolderFiles.Length < _replicaFolderFiles.Count)
         {
-            foreach (var sourceFilePath in ReplicaFolderFiles.Keys)
+            foreach (var sourceFilePath in _replicaFolderFiles.Keys)
             {
                 if(!sourceFolderFiles.Contains(sourceFilePath))
                 {
@@ -126,13 +124,13 @@ public class ReplicatorObject
         Directory.CreateDirectory(Path.GetDirectoryName(fileReplicaPath)!);
         File.Copy(sourceFilePath, fileReplicaPath);
                 
-        ReplicaFolderFiles.Add(sourceFilePath, ComputeHash(fileReplicaPath));
+        _replicaFolderFiles.Add(sourceFilePath, ComputeHash(fileReplicaPath));
     }
 
     private void UpdateFileReplica(string sourceFilePath, string fileReplicaPath, string hash)
     {
         File.Copy(sourceFilePath, fileReplicaPath, overwrite: true);
-        ReplicaFolderFiles[sourceFilePath] = hash;
+        _replicaFolderFiles[sourceFilePath] = hash;
     }
     
     private void RemoveFileReplica(string sourceFilePath)
@@ -140,7 +138,7 @@ public class ReplicatorObject
         var fileReplicaPath = Path.Combine(ReplicaPath, Path.GetRelativePath(SourcePath, sourceFilePath));
         File.Delete(fileReplicaPath);
 
-        ReplicaFolderFiles.Remove(sourceFilePath);
+        _replicaFolderFiles.Remove(sourceFilePath);
     }
 
     private static string ComputeHash(string filePath)

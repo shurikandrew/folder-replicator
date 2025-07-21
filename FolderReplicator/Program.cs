@@ -1,7 +1,4 @@
 ﻿using FolderReplicator;
-using System;
-using System.Threading;
-using System.Threading.Tasks;
 
 var sourcePath = IOOperations.GetSourceFolderPathFromConsole();
 var replicaPath = IOOperations.GetReplicaFolderPathFromConsole(sourcePath);
