@@ -2,8 +2,9 @@ namespace FolderReplicator;
 
 public static class IOOperations
 {
-    public static string GetFolderPathFromConsole()
+    public static string GetSourceFolderPathFromConsole()
     {
+        Console.Write("Input path to the source folder: ");
         var path = Console.ReadLine();
 
         while (!Directory.Exists(path))
@@ -15,8 +16,9 @@ public static class IOOperations
         return path;
     }
     
-    public static string GetFolderPathFromConsole(string pathToCompare)
+    public static string GetReplicaFolderPathFromConsole(string pathToCompare)
     {
+        Console.Write("Input path to the replica folder: ");
         var path = Console.ReadLine();
 
         while (!Directory.Exists(path) || path == pathToCompare)
@@ -32,8 +34,9 @@ public static class IOOperations
         return path;
     }
     
-    public static string GetFilePathFromConsole(string sourcePath, string replicaPath)
+    public static string GetLogFilePathFromConsole(string sourcePath, string replicaPath)
     {
+        Console.Write("Input path to log file (*.log): ");
         var path = Console.ReadLine();
 
         while (!File.Exists(path) || !Path.GetExtension(path).Equals(".log"))
@@ -57,8 +60,9 @@ public static class IOOperations
 
         return path;
     }
-    public static int GetIntegerFromConsole()
+    public static int GetIntervalFromConsole()
     {
+        Console.Write("Input synchronization interval in milliseconds: ");
         var number = Console.ReadLine();
         int res = -1;
         bool flag;
@@ -75,7 +79,7 @@ public static class IOOperations
         return res;
     }
 
-    public static void LogAction(string file, string logPath, LoggerMode mode)
+    public static void LogAction(string obj, string logPath, LoggerMode mode)
     {
         var msg = 
             (mode == LoggerMode.Create ?
@@ -83,7 +87,17 @@ public static class IOOperations
                 (mode == LoggerMode.Update ?
                     "Updated" :
                     "Removed"
-                )) +  $" file {file} At: {DateTime.Now}";
+                )) +  $" {obj} At: {DateTime.Now}";
+        
+        Console.WriteLine(msg);
+                
+        using var writeStream = new StreamWriter(logPath, append: true);
+        writeStream.WriteLine(msg);
+    }
+    
+    public static void LogError(string errorMessage, string logPath)
+    {
+        var msg = $" Error: {errorMessage} At: {DateTime.Now}";
         
         Console.WriteLine(msg);
                 

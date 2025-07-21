@@ -1,3 +1,4 @@
+using System.Diagnostics.Tracing;
 using System.Net;
 using System.Security.Cryptography;
 
@@ -8,7 +9,7 @@ public class ReplicatorObject
     private string SourcePath { get; set; }
     private string ReplicaPath { get; set; }
     private Dictionary<string, string> ReplicaFolderFiles;
-    private string LogPath { get; set; }
+    public string LogPath { get; set; }
     public int Interval { get; set; }
     
 
@@ -34,8 +35,14 @@ public class ReplicatorObject
 
     public void Replicate()
     {
+        ReplicateFiles();
+        ReplicateEmptyFolders();
+    }
+
+    private void ReplicateFiles()
+    {
         string[] sourceFolderFiles = Directory.GetFiles(SourcePath, "*", SearchOption.AllDirectories)
-            .Where(f => !f.Contains(".DS_Store"))
+            .Where(path => !path.EndsWith(".DS_Store"))
             .ToArray();
         
         for (int i = 0; i < sourceFolderFiles.Length; i++)
@@ -72,6 +79,44 @@ public class ReplicatorObject
                     
                     IOOperations.LogAction(Path.GetRelativePath(SourcePath, sourceFilePath), LogPath, LoggerMode.Remove);
                 }
+            }
+        }
+    }
+
+    private void ReplicateEmptyFolders()
+    {
+        string[] sourceFolders = Directory.GetDirectories(SourcePath, "*", SearchOption.AllDirectories)
+            .OrderBy(str => str.Length)
+            .ToArray();
+
+        foreach (var folder in sourceFolders)
+        {
+            var relativeFolderPath = Path.GetRelativePath(SourcePath, folder);
+            var replicaFolderPath = Path.Combine(ReplicaPath, Path.GetRelativePath(SourcePath, folder));
+            
+            if (!Directory.Exists(replicaFolderPath))
+            {
+                Directory.CreateDirectory(replicaFolderPath);
+                IOOperations.LogAction(relativeFolderPath, LogPath, LoggerMode.Create);
+            }
+        }
+
+        string[] replicaFolders = Directory.GetDirectories(ReplicaPath, "*", SearchOption.AllDirectories)
+            .OrderBy(str => -str.Length)
+            .ToArray();
+
+        foreach (var folder in replicaFolders)
+        {
+            var relativePath = Path.GetRelativePath(ReplicaPath, folder);
+            if(!sourceFolders.Contains(Path.Combine(SourcePath, relativePath)))
+            {
+                foreach (string file in Directory.GetFiles(folder, "*", SearchOption.AllDirectories))
+                {
+                    File.Delete(file);
+                }
+                
+                Directory.Delete(folder);
+                IOOperations.LogAction(relativePath, LogPath, LoggerMode.Remove);
             }
         }
     }
